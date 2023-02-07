@@ -1,10 +1,10 @@
 package k3dp
 
 import (
-	"github.com/aws/karpenter/pkg/apis/provisioning/v1alpha5"
-	"github.com/aws/karpenter/pkg/cloudprovider"
-	"github.com/aws/karpenter/pkg/cloudprovider/aws/apis/v1alpha1"
-	"github.com/aws/karpenter/pkg/scheduling"
+	"github.com/aws/karpenter-core/pkg/apis/v1alpha5"
+	"github.com/aws/karpenter-core/pkg/cloudprovider"
+	"github.com/aws/karpenter-core/pkg/scheduling"
+	"github.com/aws/karpenter/pkg/apis/v1alpha1"
 	"github.com/samber/lo"
 	v1 "k8s.io/api/core/v1"
 )
@@ -13,7 +13,7 @@ type LocalInstanceTypeOptions struct {
 	Name            string
 	Price           float64
 	Resources       v1.ResourceList
-	Overhead        v1.ResourceList
+	Overhead        *cloudprovider.InstanceTypeOverhead
 	Offerings       []cloudprovider.Offering
 	Architecture    string
 	OperatingSystem string
@@ -33,7 +33,7 @@ func (i *LocalInstanceType) Price() float64 {
 	}
 
 	price := 0.0
-	for k, v := range i.Resources() {
+	for k, v := range i.Capacity() {
 		switch k {
 		case v1.ResourceCPU:
 			price += 0.1 * v.AsApproximateFloat64()
@@ -46,15 +46,15 @@ func (i *LocalInstanceType) Price() float64 {
 	return price
 }
 
-func (i *LocalInstanceType) Resources() v1.ResourceList {
+func (i *LocalInstanceType) Capacity() v1.ResourceList {
 	return i.Options.Resources
 }
 
-func (i *LocalInstanceType) Offerings() []cloudprovider.Offering {
+func (i *LocalInstanceType) Offerings() cloudprovider.Offerings {
 	return i.Options.Offerings
 }
 
-func (i *LocalInstanceType) Overhead() v1.ResourceList {
+func (i *LocalInstanceType) Overhead() *cloudprovider.InstanceTypeOverhead {
 	return i.Options.Overhead
 }
 

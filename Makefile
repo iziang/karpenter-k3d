@@ -44,15 +44,13 @@ licenses: ## Verifies dependency licenses
 
 build: ## Build the Karpenter controller and webhook images using ko build
 	$(eval CONTROLLER_IMG=$(shell KO_DOCKER_REPO=$(KO_DOCKER_REPO) $(WITH_GOFLAGS) ko build -B github.com/bwagner5/karpenter-k3d/cmd/controller))
-	$(eval WEBHOOK_IMG=$(shell KO_DOCKER_REPO=$(KO_DOCKER_REPO) $(WITH_GOFLAGS) ko build -B github.com/bwagner5/karpenter-k3d/cmd/webhook))
-	k3d image import $(CONTROLLER_IMG)
-	k3d image import $(WEBHOOK_IMG)
+	k3d image import -c my-karpenter-cp $(CONTROLLER_IMG)
 
-apply: build ## Deploy the controller from the current state of your git repository into your ~/.kube/config cluster
+apply: ## Deploy the controller from the current state of your git repository into your ~/.kube/config cluster
 	helm upgrade --create-namespace --install karpenter-k3d ~/git/karpenter/charts/karpenter --namespace karpenter \
 		$(HELM_OPTS) \
-		--set controller.image=$(CONTROLLER_IMG) \
-		--set webhook.image=$(WEBHOOK_IMG)
+		--set controller.image=iziang/controller:latest \
+		--set webhook.image=iziang/controller:latest
 
 install:  ## Deploy the latest released version into your ~/.kube/config cluster
 	@echo Upgrading to $(shell grep version charts/karpenter/Chart.yaml)
